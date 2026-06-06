@@ -11,7 +11,7 @@ export const person = {
 export const socialLinks = [
   { href: 'https://github.com/Ekamruth', label: 'GitHub' },
   { href: 'https://linkedin.com/in/ekamruth-sarma-gangaraju-538a72265', label: 'LinkedIn' },
-  { href: '/Ekamruth_resume.pdf', label: 'Resume' },
+  { href: `${import.meta.env.BASE_URL}Ekamruth_resume.pdf`, label: 'Resume' },
 ]
 
 export const workProjects = [
