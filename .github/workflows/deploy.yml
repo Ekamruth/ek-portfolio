@@ -13,10 +13,14 @@ permissions:
   id-token: write       # Required for Pages deployment auth
 
 # WHAT should it do?
+defaults:
+  run:
+    working-directory: ek-portfolio    # All commands run inside the subfolder
+
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest    # Use a fresh Ubuntu VM
-    
+
     environment:
       name: github-pages
       url: ${{ github.server_url }}/${{ github.repository }}
@@ -32,6 +36,7 @@ jobs:
         with:
           node-version: 20
           cache: 'npm'        # Cache node_modules for faster builds
+          cache-dependency-path: ek-portfolio/package-lock.json
 
       # Step 3: Install dependencies
       - name: Install dependencies
@@ -49,7 +54,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: ./dist         # Vite outputs to dist/
+          path: ./ek-portfolio/dist    # Vite outputs to ek-portfolio/dist/
 
       # Step 7: Deploy to GitHub Pages
       - name: Deploy to GitHub Pages
