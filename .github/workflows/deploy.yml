@@ -1,0 +1,57 @@
+name: Deploy to GitHub Pages
+
+# WHEN should this run?
+on:
+  push:
+    branches: [main]    # Only when code is pushed to main branch
+  workflow_dispatch:     # Also allows manual trigger from GitHub UI
+
+# PERMISSIONS the workflow needs
+permissions:
+  contents: read         # To checkout your code
+  pages: write          # To deploy to GitHub Pages
+  id-token: write       # Required for Pages deployment auth
+
+# WHAT should it do?
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest    # Use a fresh Ubuntu VM
+    
+    environment:
+      name: github-pages
+      url: ${{ github.server_url }}/${{ github.repository }}
+
+    steps:
+      # Step 1: Get your code onto the VM
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Step 2: Set up Node.js
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'        # Cache node_modules for faster builds
+
+      # Step 3: Install dependencies
+      - name: Install dependencies
+        run: npm ci            # 'ci' is stricter than 'install' — uses lockfile exactly
+
+      # Step 4: Build the project
+      - name: Build
+        run: npm run build
+
+      # Step 5: Configure GitHub Pages
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      # Step 6: Upload the built files
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./dist         # Vite outputs to dist/
+
+      # Step 7: Deploy to GitHub Pages
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
