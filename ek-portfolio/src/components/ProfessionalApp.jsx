@@ -10,6 +10,7 @@ import { Work } from './Work'
 import { About } from './About'
 import { Contact } from './Contact'
 import { Footer } from './Footer'
+import { ChatWidget } from './ChatWidget'
 
 export function ProfessionalApp() {
   useLenis()
@@ -27,6 +28,7 @@ export function ProfessionalApp() {
       <About />
       <Contact />
       <Footer />
+      <ChatWidget />
     </>
   )
 }

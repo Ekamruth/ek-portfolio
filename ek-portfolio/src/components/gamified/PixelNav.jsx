@@ -15,13 +15,6 @@ export function PixelNav() {
         <li><a href="#pixel-quest">Quests</a></li>
         <li><a href="#pixel-skills">Skills</a></li>
         <li><a href="#pixel-contact">Connect</a></li>
-        <li>
-          <span className="pixel-ai-badge">
-            <span className="pixel-ai-dot" />
-            AI
-            <span className="pixel-ai-soon">Soon</span>
-          </span>
-        </li>
       </ul>
       <button className="pixel-mode-btn" onClick={resetMode}>
         [ Switch Mode ]

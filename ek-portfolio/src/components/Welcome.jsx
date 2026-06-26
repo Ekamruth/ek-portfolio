@@ -141,17 +141,24 @@ export function Welcome() {
       </div>
 
       <motion.div
-        className="welcome-ai-teaser"
+        className="welcome-teasers"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8, delay: 1.4, ease }}
       >
-        <div className="welcome-ai-dot" />
-        <div className="welcome-ai-text">
-          <span className="welcome-ai-label">Coming Soon</span>
-          <span className="welcome-ai-desc">
-            My AI persona &mdash; ask it anything about my work, skills, or experience
-          </span>
+        <div className="welcome-ai-teaser">
+          <div className="welcome-ai-dot" />
+          <div className="welcome-ai-text">
+            <span className="welcome-ai-label">Coming Soon</span>
+            <span className="welcome-ai-desc">Personal projects section — side projects and experiments</span>
+          </div>
+        </div>
+        <div className="welcome-ai-teaser welcome-ai-teaser--new">
+          <div className="welcome-new-dot" />
+          <div className="welcome-ai-text">
+            <span className="welcome-ai-label welcome-ai-label--new">New Feature</span>
+            <span className="welcome-ai-desc">Explore the AI persona in any of the viewing modes</span>
+          </div>
         </div>
       </motion.div>
 

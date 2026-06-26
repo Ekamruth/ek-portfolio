@@ -6,6 +6,7 @@ import { PixelContact } from './PixelContact'
 import { PixelFooter } from './PixelFooter'
 import { PixelSprites } from './PixelSprites'
 import { PixelClouds, PixelDivider } from './PixelTerrain'
+import { PixelChatWidget } from './PixelChatWidget'
 
 export function GamifiedApp() {
   return (
@@ -21,6 +22,7 @@ export function GamifiedApp() {
       <PixelDivider />
       <PixelContact />
       <PixelFooter />
+      <PixelChatWidget />
     </div>
   )
 }

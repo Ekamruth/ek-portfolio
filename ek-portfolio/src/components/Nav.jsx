@@ -16,13 +16,6 @@ export function Nav() {
         <li><a href="#about">About</a></li>
         <li><a href="#contact">Contact</a></li>
         <li>
-          <span className="nav-ai-badge">
-            <span className="nav-ai-dot" />
-            AI
-            <span className="nav-ai-soon">Soon</span>
-          </span>
-        </li>
-        <li>
           <button className="nav-mode-btn" onClick={resetMode}>
             Switch View
           </button>
