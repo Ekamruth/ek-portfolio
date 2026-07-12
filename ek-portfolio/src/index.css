@@ -1,5 +1,14 @@
 @import "tailwindcss";
 
+/* Self-hosted pixel font (OFL) — used by the gamified world only */
+@font-face {
+  font-family: 'Press Start 2P';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('./assets/fonts/press-start-2p-latin.woff2') format('woff2');
+}
+
 @theme {
   --font-sans: 'Space Grotesk', sans-serif;
   --font-mono: 'Space Mono', monospace;
@@ -1769,3 +1778,327 @@ footer {
   .pixel-world .pcw-wrap { bottom: 1.25rem; right: 1.25rem; }
   .pixel-world .pcw-panel { width: calc(100vw - 2.5rem); height: 26rem; }
 }
+
+/* ─── 3D quest world ─────────── */
+/* Make the world transparent so the body-portaled 3D canvas shows through.
+   The dark backdrop + canvas are portaled to <body> (see GamifiedApp /
+   World) so they escape App.jsx's transformed motion wrapper. */
+.quest-mode { background: transparent; }
+/* Fallback mode still renders DOM sections over its own bg. */
+.pixel-world:not(.quest-mode) { background: var(--pixel-bg); }
+.pixel-content { position: relative; z-index: 1; }
+
+/* The level IS the page — this empty spacer is the scroll track. */
+.quest-scroll {
+  height: 1550vh;
+  pointer-events: none;
+}
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px;
+  padding: 0; margin: -1px; overflow: hidden;
+  clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+/* ── Boot screen (diegetic loading) ── */
+.quest-boot {
+  position: fixed; inset: 0; z-index: 90;
+  display: flex; align-items: center; justify-content: center;
+  background: #0f0e1a;
+  font-family: var(--pixel-font, 'Press Start 2P', monospace);
+  transition: opacity 0.6s ease;
+}
+.quest-boot--done { opacity: 0; pointer-events: none; }
+.quest-boot-inner { text-align: center; }
+.quest-boot-sword { font-size: 2rem; display: block; margin-bottom: 1.5rem; color: #f59e0b; }
+.quest-boot-title {
+  font-size: 0.75rem; color: #e8e2d6; letter-spacing: 0.25em;
+  margin-bottom: 1.5rem;
+  animation: pcw-blink 1.2s step-end infinite;
+}
+.quest-boot-track {
+  width: 260px; height: 14px; margin: 0 auto;
+  border: 2px solid rgba(245,158,11,0.4);
+  padding: 2px;
+}
+.quest-boot-fill { height: 100%; width: 0%; background: #f59e0b; }
+.quest-boot-pct { margin-top: 0.75rem; font-size: 0.5rem; color: #8b8fa3; }
+.quest-boot-hint { margin-top: 2rem; font-size: 0.4375rem; color: #55536b; letter-spacing: 0.1em; }
+
+/* ── Quest HUD ── */
+.quest-hud {
+  font-family: var(--pixel-font, 'Press Start 2P', monospace);
+  color: #e8e2d6;
+}
+.qh-nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 40;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 1.1rem 1.5rem;
+  pointer-events: none;
+}
+.qh-nav > * { pointer-events: auto; }
+.qh-nav .pixel-nav-logo {
+  font-family: inherit; font-size: 0.75rem; color: #f59e0b; text-decoration: none;
+  text-shadow: 0 0 12px rgba(245,158,11,0.5);
+}
+.qh-nav-links { display: flex; gap: 0.5rem; list-style: none; margin: 0; padding: 0; }
+.qh-nav-links button {
+  font-family: inherit; font-size: 0.5rem; letter-spacing: 0.08em;
+  color: #8b8fa3; background: rgba(15,14,26,0.55);
+  border: 2px solid transparent; padding: 0.5rem 0.7rem; cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+}
+.qh-nav-links button:hover { color: #f59e0b; border-color: rgba(245,158,11,0.4); }
+.qh-nav-right { display: flex; gap: 0.5rem; align-items: center; }
+.qh-nav .pixel-mode-btn {
+  font-family: inherit; font-size: 0.5rem; color: #8b8fa3;
+  background: rgba(15,14,26,0.55); border: 2px solid rgba(245,158,11,0.2);
+  padding: 0.5rem 0.7rem; cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+}
+.qh-nav .pixel-mode-btn:hover { color: #f59e0b; border-color: #f59e0b; }
+
+/* XP bar */
+.qh-xp {
+  position: fixed; bottom: 1.4rem; left: 50%; transform: translateX(-50%);
+  z-index: 40; display: flex; align-items: center; gap: 0.75rem;
+  pointer-events: none;
+}
+.qh-xp-lvl { font-size: 0.5rem; color: #22d3ee; text-shadow: 0 0 10px rgba(34,211,238,0.6); }
+.qh-xp-label { font-size: 0.5rem; color: #8b8fa3; }
+.qh-xp-track {
+  position: relative; width: min(320px, 38vw); height: 12px;
+  border: 2px solid rgba(245,158,11,0.35); padding: 2px;
+  background: rgba(15,14,26,0.6);
+}
+.qh-xp-fill {
+  height: 100%; width: 0%;
+  background: linear-gradient(90deg, #f59e0b, #fbbf24);
+  box-shadow: 0 0 10px rgba(245,158,11,0.5);
+  transition: none;
+}
+.qh-xp-pip {
+  position: absolute; top: -4px; bottom: -4px; width: 2px;
+  background: rgba(232,226,214,0.35);
+}
+
+/* Letterbox cinematics */
+.qh-bar {
+  position: fixed; left: 0; right: 0; height: 0; z-index: 45;
+  background: #050508; pointer-events: none;
+}
+.qh-bar--top { top: 0; }
+.qh-bar--bottom { bottom: 0; }
+.qh-titlecard {
+  position: fixed; left: 50%; top: 13vh; z-index: 46;
+  transform: translateX(-50%);
+  text-align: center; opacity: 0; pointer-events: none;
+}
+.qh-titlecard-quest {
+  display: block; font-size: 0.5625rem; color: #f59e0b;
+  letter-spacing: 0.35em; margin-bottom: 0.6rem;
+}
+.qh-titlecard-name {
+  display: block; font-size: 0.9rem; color: #e8e2d6;
+  letter-spacing: 0.12em;
+  text-shadow: 0 0 18px rgba(245,158,11,0.35);
+}
+
+/* Toasts */
+.qh-toasts {
+  position: fixed; right: 1.25rem; bottom: 4.5rem; z-index: 50;
+  display: flex; flex-direction: column; gap: 0.5rem; align-items: flex-end;
+  pointer-events: none;
+}
+.qh-toast {
+  font-size: 0.5rem; line-height: 1.7; max-width: 300px;
+  color: #e8e2d6; background: rgba(15,14,26,0.92);
+  border: 2px solid rgba(245,158,11,0.4);
+  padding: 0.6rem 0.8rem;
+  animation: qh-toast-in 0.25s steps(4) both;
+}
+.qh-toast--achievement { border-color: #22d3ee; color: #22d3ee; }
+@keyframes qh-toast-in {
+  from { transform: translateX(20px); opacity: 0; }
+  to { transform: none; opacity: 1; }
+}
+
+/* Level-up flash */
+.qh-levelup {
+  position: fixed; inset: 0; z-index: 48;
+  display: flex; align-items: center; justify-content: center;
+  pointer-events: none;
+  animation: qh-levelup-bg 1.6s ease both;
+}
+.qh-levelup span {
+  font-size: clamp(1.2rem, 4vw, 2.2rem); color: #fbbf24;
+  letter-spacing: 0.3em;
+  text-shadow: 0 0 30px rgba(251,191,36,0.8);
+  animation: qh-levelup-txt 1.6s steps(8) both;
+}
+@keyframes qh-levelup-bg {
+  0% { background: rgba(251,191,36,0); }
+  12% { background: rgba(251,191,36,0.18); }
+  100% { background: rgba(251,191,36,0); }
+}
+@keyframes qh-levelup-txt {
+  0% { opacity: 0; transform: scale(0.6); }
+  15% { opacity: 1; transform: scale(1.15); }
+  30% { transform: scale(1); }
+  80% { opacity: 1; }
+  100% { opacity: 0; transform: scale(1.05); }
+}
+
+/* ── Diegetic hologram panels (drei Html, perspective-anchored) ── */
+.holo {
+  font-family: var(--pixel-font, 'Press Start 2P', monospace);
+  color: #e8e2d6;
+  background: rgba(13, 12, 24, 0.88);
+  border: 2px solid rgba(245, 158, 11, 0.5);
+  box-shadow: 0 0 24px rgba(245, 158, 11, 0.12), inset 0 0 40px rgba(245, 158, 11, 0.04);
+  padding: 14px 16px 12px;
+  position: relative;
+  opacity: 0;
+  transform: scaleY(0.04);
+  transform-origin: top center;
+  transition: opacity 0.28s steps(5), transform 0.34s cubic-bezier(0.22, 1.6, 0.36, 1);
+  pointer-events: none;
+}
+.holo::after {
+  /* scanline sheen */
+  content: '';
+  position: absolute; inset: 0;
+  background: repeating-linear-gradient(0deg, rgba(255,255,255,0.035) 0 1px, transparent 1px 3px);
+  pointer-events: none;
+}
+.holo--on { opacity: 1; transform: scaleY(1); }
+.holo--obelisk { border-color: rgba(34, 211, 238, 0.55); box-shadow: 0 0 24px rgba(34,211,238,0.12); }
+.holo--ruins { border-color: rgba(244, 114, 182, 0.55); box-shadow: 0 0 24px rgba(244,114,182,0.12); }
+.holo--portal { border-color: rgba(52, 211, 153, 0.55); box-shadow: 0 0 24px rgba(52,211,153,0.12); }
+
+.holo-head {
+  display: flex; justify-content: space-between;
+  font-size: 9px; color: #8b8fa3; letter-spacing: 0.15em;
+  margin-bottom: 12px;
+}
+.holo-title { font-size: 14px; line-height: 1.5; color: #f59e0b; margin: 0 0 8px; }
+.holo--obelisk .holo-title { color: #22d3ee; }
+.holo--ruins .holo-title { color: #f472b6; }
+.holo--portal .holo-title { color: #34d399; }
+.holo-guild { font-size: 9px; color: #8b8fa3; margin: 0 0 10px; line-height: 1.6; }
+.holo-desc {
+  font-size: 9.5px; line-height: 1.8; color: #c9c3b8; margin: 0 0 12px;
+  display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden;
+}
+.holo-impact { list-style: none; margin: 0 0 12px; padding: 0; }
+.holo-impact li {
+  font-size: 9.5px; line-height: 1.7; color: #e8e2d6; margin-bottom: 6px;
+  opacity: 0; transform: translateX(-8px);
+  transition: opacity 0.3s steps(3), transform 0.3s ease;
+}
+.holo--on .holo-impact li { opacity: 1; transform: none; }
+.holo-impact em { color: #fbbf24; font-style: normal; margin-right: 5px; }
+.holo-tags { display: flex; flex-wrap: wrap; gap: 5px; }
+.holo-tags span {
+  font-size: 8px; color: #22d3ee; border: 1px solid rgba(34, 211, 238, 0.35);
+  padding: 4px 6px; letter-spacing: 0.06em;
+}
+.holo-stamp {
+  position: absolute; top: 8px; right: -12px;
+  font-size: 9px; letter-spacing: 0.1em;
+  border: 2px solid; padding: 5px 8px;
+  transform: rotate(6deg) scale(0);
+  background: rgba(13, 12, 24, 0.92);
+  transition: transform 0.35s cubic-bezier(0.34, 2.2, 0.5, 1) 0.2s;
+}
+.holo--cleared .holo-stamp { transform: rotate(6deg) scale(1); }
+
+/* campfire dialogue */
+.holo--dialogue { width: 470px; }
+.holo-dialogue-text {
+  font-family: inherit; font-size: 10px; line-height: 2;
+  color: #e8e2d6; white-space: pre-wrap; word-break: break-word;
+  margin: 0; min-height: 150px;
+}
+
+/* campfire stats — a tidy row docked at the bottom of the ABOUT panel */
+.holo-stats {
+  display: flex; gap: 12px;
+  margin-top: 14px; padding-top: 12px;
+  border-top: 1px solid rgba(245, 158, 11, 0.25);
+  opacity: 0; transition: opacity 0.5s ease 0.35s;
+}
+.holo--on .holo-stats { opacity: 1; }
+.holo-stat { flex: 1; text-align: center; }
+.holo-stat strong {
+  display: block; font-size: 17px; color: #fbbf24; margin-bottom: 6px;
+  text-shadow: 0 0 8px rgba(251, 191, 36, 0.5);
+}
+.holo-stat span {
+  display: block; font-size: 7.5px; line-height: 1.6; color: #b9b3a8;
+  letter-spacing: 0.03em;
+}
+
+/* armory racks */
+.holo--rack { padding: 12px 14px; }
+.rack-label { font-size: 9px; letter-spacing: 0.15em; margin: 0 0 8px; }
+.rack-items { font-size: 8.5px; line-height: 1.9; color: #c9c3b8; margin: 0; }
+
+/* portal contact */
+.portal-email {
+  display: block; font-size: 10.5px; color: #34d399; text-decoration: none;
+  margin: 12px 0 10px; letter-spacing: 0.04em;
+}
+.portal-email:hover { text-decoration: underline; }
+.portal-links { display: flex; gap: 10px; margin-bottom: 8px; }
+.portal-links a { font-size: 9px; color: #8b8fa3; text-decoration: none; }
+.portal-links a:hover { color: #34d399; }
+
+/* ── Mode-switch pixel dissolve ── */
+.mode-glitch {
+  position: fixed; inset: 0; z-index: 200;
+  display: grid;
+  grid-template-columns: repeat(14, 1fr);
+  grid-template-rows: repeat(9, 1fr);
+  pointer-events: none;
+}
+.mode-glitch span {
+  opacity: 0;
+  animation: mode-tile 0.85s steps(4) both;
+}
+@keyframes mode-tile {
+  0% { opacity: 0; }
+  30% { opacity: 1; }
+  62% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+/* Debug + scroll hint */
+.qh-debug {
+  position: fixed; bottom: 1.4rem; left: 1.4rem; z-index: 50;
+  font-size: 0.5rem; color: #34d399;
+  border: 2px solid rgba(52,211,153,0.5);
+  background: rgba(15,14,26,0.85); padding: 0.5rem 0.7rem;
+}
+.qh-scrollhint {
+  position: fixed; bottom: 4rem; left: 50%; transform: translateX(-50%);
+  z-index: 39; font-size: 0.5625rem; color: #c8c5d6; letter-spacing: 0.2em;
+  text-shadow: 0 0 8px rgba(0, 0, 0, 0.6);
+  animation: qh-hint 2.2s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes qh-hint {
+  0%, 100% { opacity: 0.5; transform: translate(-50%, 0); }
+  50% { opacity: 1; transform: translate(-50%, 6px); }
+}
+
+.qh-sound {
+  position: fixed; bottom: 3.5rem; left: 1.25rem; z-index: 60;
+  font-size: 1.25rem; padding: 0.5rem 0.65rem;
+  background: rgba(15, 14, 26, 0.7);
+  border: 2px solid var(--pixel-border);
+  color: var(--pixel-amber);
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+}
+.qh-sound:hover { color: var(--pixel-cyan); border-color: var(--pixel-cyan); }

@@ -1,7 +1,5 @@
-import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { skills, stats, experience } from '../../data/portfolio'
-import { useSparkle } from './PixelSparkle'
 
 const skillGroups = [
   { label: 'Core', icon: '&#9876;', items: skills.core },
@@ -12,9 +10,6 @@ const skillGroups = [
 ]
 
 function SkillTree({ group, index }) {
-  const [unlocked, setUnlocked] = useState(false)
-  const { SparkleContainer } = useSparkle()
-
   return (
     <motion.div
       className="pixel-skill-group"
@@ -29,28 +24,10 @@ function SkillTree({ group, index }) {
           dangerouslySetInnerHTML={{ __html: group.icon }}
         />
         <span className="pixel-skill-label">{group.label}</span>
-        {!unlocked && (
-          <SparkleContainer>
-            <button
-              className="pixel-btn pixel-btn--tiny"
-              onClick={() => setUnlocked(true)}
-            >
-              Unlock
-            </button>
-          </SparkleContainer>
-        )}
       </div>
-      <div className={`pixel-skill-items ${unlocked ? 'pixel-skill-items--visible' : ''}`}>
-        {group.items.map((skill, i) => (
-          <motion.span
-            key={skill}
-            className="pixel-skill"
-            initial={unlocked ? { opacity: 0, scale: 0.5 } : false}
-            animate={unlocked ? { opacity: 1, scale: 1 } : false}
-            transition={{ duration: 0.2, delay: i * 0.05 }}
-          >
-            {skill}
-          </motion.span>
+      <div className="pixel-skill-items pixel-skill-items--visible">
+        {group.items.map((skill) => (
+          <span key={skill} className="pixel-skill">{skill}</span>
         ))}
       </div>
     </motion.div>
@@ -88,7 +65,6 @@ export function PixelAbout() {
 
       <div className="pixel-section-header" style={{ marginTop: '3rem' }}>
         <span className="pixel-section-label">&#127795; Skill Tree</span>
-        <span className="pixel-section-count">Click to unlock each branch</span>
       </div>
 
       <div className="pixel-skill-tree">

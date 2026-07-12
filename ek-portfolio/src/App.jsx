@@ -3,6 +3,7 @@ import { usePortfolioMode } from './store/usePortfolioMode'
 import { Welcome } from './components/Welcome'
 import { ProfessionalApp } from './components/ProfessionalApp'
 import { GamifiedApp } from './components/gamified/GamifiedApp'
+import { ModeTransition } from './components/ModeTransition'
 
 const ease = [0.22, 1, 0.36, 1]
 
@@ -10,6 +11,8 @@ function App() {
   const mode = usePortfolioMode((s) => s.mode)
 
   return (
+    <>
+    <ModeTransition />
     <AnimatePresence mode="wait">
       {mode === null && (
         <motion.div
@@ -45,6 +48,7 @@ function App() {
         </motion.div>
       )}
     </AnimatePresence>
+    </>
   )
 }
 
